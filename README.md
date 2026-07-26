@@ -13,6 +13,7 @@ Hệ thống ghi nhận và theo dõi đóng góp trong dự án nhóm.
 ```text
 Learn/          # Tài liệu học tập và ghi chú kỹ thuật
 SITEMAP.md      # Bản đồ trang và đặc tả frontend dùng chung cho cả team
+FRONTEND-OVERVIEW.md # Sơ đồ frontend rút gọn, xem nhanh cho toàn team
 Brand/          # Brandkit và tài liệu đặc tả thương hiệu
 WebApp/         # Ứng dụng Next.js (sẽ khởi tạo sau)
 Sub-projects/   # Các thử nghiệm hoặc phần việc độc lập
