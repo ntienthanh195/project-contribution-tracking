@@ -19,17 +19,33 @@ flowchart TB
     WORKSPACE --> MYTASKS["Task của tôi"]
     WORKSPACE --> CONTRIB["Đóng góp của tôi"]
     WORKSPACE --> NOTI["Thông báo"]
+    WORKSPACE --> PERSONALSETTINGS["Cài đặt cá nhân"]
+    PERSONALSETTINGS --> PROFILE["Hồ sơ"]
+    PERSONALSETTINGS --> SECURITY["Bảo mật"]
+    PERSONALSETTINGS --> NOTIPREF["Tùy chọn thông báo"]
 
     PROJECTS --> PROJECT["Workspace dự án"]
     PROJECT --> OVERVIEW["Tổng quan"]
     PROJECT --> TASKS["Task board"]
+    PROJECT --> REVIEWQUEUE["Hàng chờ duyệt"]
+    PROJECT --> REASSIGN["Cần phân công lại"]
     PROJECT --> MEMBERS["Thành viên"]
     PROJECT --> STATS["Thống kê"]
+    PROJECT --> ACTIVITY["Nhật ký dự án"]
+    PROJECT --> EXPORT["Báo cáo & xuất file"]
+    PROJECT --> PROJECTSETTINGS["Cài đặt dự án"]
 
     TASKS --> DETAIL["Chi tiết task"]
     DETAIL --> PROGRESS["Báo cáo & minh chứng"]
+    DETAIL --> ASSIGNMENTS["Lịch sử phân công<br/>Ai làm bao nhiêu %"]
     DETAIL --> REVIEW["Duyệt task"]
     DETAIL --> TRANSFER["Chuyển task"]
+
+    MEMBERS --> MEMBERINVITE["Mời / mời lại thành viên"]
+
+    PROJECTSETTINGS --> OWNERMODE["Chế độ Owner<br/>Contributor / Chỉ quản lý"]
+    PROJECTSETTINGS --> OWNERSHIP["Chuyển quyền Owner"]
+    PROJECTSETTINGS --> LIFECYCLE["Hoàn thành · Mở lại<br/>Hủy / xóa dự án"]
 
     ADMIN["Admin"] --> ADMINUI["Admin workspace"]
     ADMINUI --> USERS["Tài khoản"]
@@ -76,8 +92,11 @@ flowchart LR
 │ Project menu   │                                                     │
 │ ├─ Overview    │                                                     │
 │ ├─ Tasks       │                                                     │
+│ ├─ Reviews     │                                                     │
+│ ├─ Reassign    │                                                     │
 │ ├─ Members     │                                                     │
-│ └─ Statistics  │                                                     │
+│ ├─ Statistics  │                                                     │
+│ └─ Settings    │                                                     │
 └────────────────┴─────────────────────────────────────────────────────┘
 ```
 
@@ -107,9 +126,12 @@ TASK DETAIL
 │ Tiến độ hiện tại                   │ Priority · Weight · Status      │
 ├────────────────────────────────────┼─────────────────────────────────┤
 │ Reports · Evidence · Assignments   │ Cập nhật tiến độ                │
-│ Timeline báo cáo và phản hồi       │ Gửi duyệt / Review / Transfer   │
+│ Báo cáo và phản hồi                │ Gửi duyệt / Review / Transfer   │
+│ Ai làm: 0→40% · 40→75% · 75→100%   │ Đóng góp được công nhận         │
 └────────────────────────────────────┴─────────────────────────────────┘
 ```
+
+Lịch sử phân công là dữ liệu cốt lõi của task chuyển giao: mỗi giai đoạn phải lưu người thực hiện, khoảng tiến độ, thời gian, lý do chuyển và tỷ lệ đóng góp được công nhận.
 
 ## 5. Các màn hình cần thiết kế trước
 
@@ -121,12 +143,46 @@ TASK DETAIL
 | 4 | Project overview | `/projects/:projectId` | Tiến độ, cảnh báo, thành viên |
 | 5 | Task board | `.../tasks` | Trạng thái task và bộ lọc |
 | 6 | Task detail | `.../tasks/:taskId` | Tiến độ, báo cáo, minh chứng, action |
-| 7 | Review | `.../review` | Submission, feedback, quyết định |
-| 8 | Members | `.../members` | Role, status, contribution |
-| 9 | Statistics | `.../statistics` | Tiến độ trọng số và đóng góp |
-| 10 | Admin | `/admin/*` | Users, projects, logs |
+| 7 | Assignment history | `.../assignments` | Các giai đoạn thực hiện và % đóng góp |
+| 8 | Review queue | `.../reviews` | Tất cả task đang chờ người dùng duyệt |
+| 9 | Review detail | `.../review` | Submission, feedback, quyết định |
+| 10 | Reassignments | `.../reassignments` | Task cần giao lại hoặc bị chặn duyệt |
+| 11 | Members | `.../members` | Role, status, contribution |
+| 12 | Invite member | `.../members/invite` | Mời mới hoặc mời lại người đã rời |
+| 13 | Statistics | `.../statistics` | Tiến độ trọng số và đóng góp |
+| 14 | Project activity | `.../activity` | Dòng thời gian của riêng dự án |
+| 15 | Project reports | `.../reports` | Báo cáo tổng hợp và xuất file |
+| 16 | Project settings | `.../settings/*` | Chế độ Owner, ownership, vòng đời dự án |
+| 17 | Personal settings | `/settings/*` | Hồ sơ, bảo mật, thông báo |
+| 18 | Admin | `/admin/*` | Users, projects, system logs |
 
-## 6. Quy tắc frontend không được bỏ qua
+## 6. Các khu vực quản lý quan trọng
+
+### Hàng chờ duyệt
+
+Màn hình tổng hợp task `PENDING_REVIEW` mà Owner/Manager hiện tại được phép duyệt. Có bộ lọc theo dự án, assignee, deadline và thời gian chờ; không đưa task của chính reviewer vào danh sách.
+
+### Cần phân công lại
+
+Gồm task `NEEDS_REASSIGNMENT` và `REVIEW_BLOCKED`. Manager có thể chọn người nhận, reviewer mới, cách xử lý tiến độ cũ và tỷ lệ đóng góp được công nhận.
+
+### Cài đặt dự án
+
+```mermaid
+flowchart LR
+    SETTINGS["Cài đặt dự án"] --> GENERAL["Thông tin chung"]
+    SETTINGS --> MODE["Chế độ Owner"]
+    MODE --> CONTRIBUTOR["Contributor<br/>Được nhận task<br/>Bắt buộc có Manager"]
+    MODE --> MANAGEMENT["Chỉ quản lý<br/>Không nhận task"]
+    SETTINGS --> OWNERTRANSFER["Chuyển quyền Owner"]
+    SETTINGS --> LIFECYCLE2["Hoàn thành · Mở lại · Hủy · Xóa"]
+```
+
+### Thành viên và lời mời
+
+Trang “Mời thành viên” phải xử lý cả người mới và người từng `LEFT`/`REMOVED`. Khi mời lại, hệ thống kích hoạt bản ghi cũ, giữ lịch sử đóng góp và không tự động trả lại task đã chuyển.
+
+## 7. Quy tắc frontend không được bỏ qua
 
 - Không ai được tự duyệt task của chính mình.
 - Owner ở chế độ `MANAGEMENT_ONLY` không được nhận task.
@@ -134,5 +190,4 @@ TASK DETAIL
 - Rời dự án, loại thành viên hoặc hủy task không được xóa lịch sử đóng góp.
 - Mọi màn hình phải có trạng thái loading, empty, error và forbidden.
 - Action bị cấm phải được ẩn; backend vẫn kiểm tra quyền lại.
-
 
