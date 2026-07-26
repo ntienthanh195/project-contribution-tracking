@@ -12,7 +12,8 @@ Hệ thống ghi nhận và theo dõi đóng góp trong dự án nhóm.
 
 ```text
 Learn/          # Tài liệu học tập và ghi chú kỹ thuật
-Brand/          # Sitemap, brandkit và tài liệu đặc tả thương hiệu
+SITEMAP.md      # Bản đồ trang và đặc tả frontend dùng chung cho cả team
+Brand/          # Brandkit và tài liệu đặc tả thương hiệu
 WebApp/         # Ứng dụng Next.js (sẽ khởi tạo sau)
 Sub-projects/   # Các thử nghiệm hoặc phần việc độc lập
 ```
@@ -23,3 +24,4 @@ Sub-projects/   # Các thử nghiệm hoặc phần việc độc lập
 2. Hoàn thiện brandkit.
 3. Viết tài liệu nội dung và đặc tả.
 4. Khởi tạo và phát triển ứng dụng Next.js trong `WebApp/`.
+
